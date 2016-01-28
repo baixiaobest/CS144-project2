@@ -213,21 +213,60 @@ class MyParser {
     
     public static void ScanItem(Node n, PrintWriter itemTable){
         org.w3c.dom.NamedNodeMap nattrib = n.getAttributes();
-        System.out.println(nattrib.item(0).getNodeValue());
+        String itemID = nattrib.item(0).getNodeValue();
+        itemTable.print(itemID+"\t");
+        System.out.println(itemID);
         
         org.w3c.dom.NodeList itemChild = n.getChildNodes();
         for(int i=0; i<itemChild.getLength(); i++){
             String name = itemChild.item(i).getNodeName();
             if(name == "Name"){
-                System.out.println("    name: "+itemChild.item(i).getChildNodes().item(0).getNodeValue());
-            }else if(name == "Category"){
-                System.out.println("    "+itemChild.item(i).getChildNodes().item(0).getNodeValue());
+                String itemName = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                itemTable.print(itemName+"\t");
+            }else if(name == "Category"){ //Category in ItemCategory Table
+                String category = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                
             }else if(name == "Currently"){
-                System.out.println("    Price: "+strip(itemChild.item(i).getChildNodes().item(0).getNodeValue()));
+                String currently = strip(itemChild.item(i).getChildNodes().item(0).getNodeValue());
+                itemTable.print(currently+"\t");
             }else if(name == "First_Bid"){
-                System.out.println("    First_Bid: "+strip(itemChild.item(i).getChildNodes().item(0).getNodeValue()));
+                String firstBid = strip(itemChild.item(i).getChildNodes().item(0).getNodeValue());
+                itemTable.print(firstBid+"\t");
+            }else if(name == "Number_of_Bids"){
+                String numOfBids = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                itemTable.print(numOfBids+"\t");
+            }else if(name == "Bids"){
+            
+            }else if(name == "Location"){ //latitude and longitude int ItemPosition table
+                String Location = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                itemTable.print(Location+"\t");
+            }else if(name == "Country"){
+                String Country = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                itemTable.print(Country+"\t");
+            }else if(name == "Started"){ //convert to date
+                String started = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                itemTable.print(started+"\t");
+            }else if(name == "Ends"){ //convert to date
+                String ends = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                itemTable.print(ends+"\t");
+            }else if(name == "Seller"){ //id, rating
+                org.w3c.dom.NamedNodeMap sellerAtt = itemChild.item(i).getAttributes();
+                String rating = sellerAtt.item(0).getNodeValue();
+                String ID = sellerAtt.item(1).getNodeValue();
+                itemTable.print(ID+"\t");
+            }else if(name == "Description"){
+                if(itemChild.item(i).getChildNodes().getLength()>0){
+            		String description = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                	itemTable.println(description);
+                }else{
+                    itemTable.print("\n");
+                }
             }
         }
+    }
+    
+    public static void ScanBid(Node n){
+    
     }
     
     public static void recursiveDescent(Node n, int level) {
