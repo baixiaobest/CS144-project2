@@ -27,16 +27,10 @@ UserCountry(UserID, Country)
 key:(UserID)
 
 
-Functional Dependencies:
-ItemID->Name, Currently, First_Bid, Number_of_Bids, Location, Country, Started, Ends, SellerID, Description
+Excluding those that effectively specify keys, there is no completely nontrivial functional dependencies that hold on each relation.
 
-ItemID->Buy_Price
+********
+Shall we count
+Something like ItemID, Name -> rest ? It is compeletely nontrivial but redundant.
 
-ItemID->Latitude, Longitude
-
-UserID->Rating
-
-UserID->Location
-
-UserID->Country
-
+All relations are in BCNF and 4NF.
