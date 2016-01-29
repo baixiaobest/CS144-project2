@@ -57,4 +57,3 @@ create table UserLocation(
 	Country varchar(200),
 	primary key(UserID)
 )ENGINE=INNODB;
-
