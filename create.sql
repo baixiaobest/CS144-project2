@@ -1,11 +1,11 @@
 create table ItemTable(
 	ItemID int not null,
-	Name varchar(100),
+	Name varchar(200),
 	Currently DECIMAL(8,2),
 	First_Bid DECIMAL(8,2),
 	Number_of_Bids int,
-	Location varchar(50),
-	Country varchar(50),
+	Location varchar(200),
+	Country varchar(200),
 	Started TIMESTAMP,
 	Ends TIMESTAMP,
 	SellerID int,
@@ -15,7 +15,7 @@ create table ItemTable(
 
 create table ItemCategory(
 	ItemID int not null,
-	Category varchar(50)
+	Category varchar(200)
 )ENGINE=INNODB;
 
 create table ItemBuyPrice(
@@ -53,8 +53,8 @@ create table BidderRating(
 
 create table UserLocation(
 	UserID int not null,
-	Location varchar(50),
-	Country varchar(50),
+	Location varchar(200),
+	Country varchar(200),
 	primary key(UserID)
 )ENGINE=INNODB;
 
