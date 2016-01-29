@@ -9,7 +9,7 @@ CREATE TABLE ItemTable (
 	Started			TIMESTAMP NOT NULL,
 	Ends			TIMESTAMP NOT NULL,
 	SellerID		INT	NOT NULL,
-	Description		VARCHAR(100) NOT NULL,
+	Description		VARCHAR(4000) NOT NULL,
 	PRIMARY KEY (ItemID)
 );
 
