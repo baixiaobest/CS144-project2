@@ -40,6 +40,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ErrorHandler;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
+
 
 class MyParser {
     
@@ -61,6 +66,15 @@ class MyParser {
 	"DocFragment",
 	"Notation",
     };
+    
+    static PrintWriter itemTable;
+    static PrintWriter itemCategory;
+    static PrintWriter itemBuyPrice;
+    static PrintWriter itemBids;
+    static PrintWriter itemPosition;
+    static PrintWriter sellerRating;
+    static PrintWriter bidderRating;
+    static PrintWriter userLocation;
     
     static class MyErrorHandler implements ErrorHandler {
         
@@ -178,7 +192,7 @@ class MyParser {
         
         /* At this point 'doc' contains a DOM representation of an 'Items' XML
          * file. Use doc.getDocumentElement() to get the root Element. */
-        System.out.println("Successfully parsed - " + xmlFile);
+        
         
         /* Fill in code here (you will probably need to write auxiliary
             methods). */
@@ -190,32 +204,24 @@ class MyParser {
             n = nlist.item(0);
         }
         
-        try{
-        	PrintWriter itemTable = new PrintWriter("ItemTable", "UTF-8");
-            ScanItems(n, itemTable);
-        }
-        catch(FileNotFoundException e){
-            
-        }
-        catch(UnsupportedEncodingException e){
-        
-        }
+        ScanItems(n);
+        System.out.println("Successfully parsed - " + xmlFile);
     }
     
-    public static void ScanItems(Node n, PrintWriter itemTable){
-        org.w3c.dom.NodeList itemsList = n.getChildNodes();
-        for(int i=0; i<itemsList.getLength(); i++){
-            if(itemsList.item(i).getNodeName()=="Item"){
-            	ScanItem(itemsList.item(i), itemTable);
+    public static void ScanItems(Node n){
+            org.w3c.dom.NodeList itemsList = n.getChildNodes();
+            for(int i=0; i<itemsList.getLength(); i++){
+                if(itemsList.item(i).getNodeName()=="Item"){
+                    ScanItem(itemsList.item(i), itemTable, itemCategory,itemBuyPrice ,itemBids, itemPosition, sellerRating, bidderRating, userLocation);
+                }
             }
-        }
+        
     }
     
-    public static void ScanItem(Node n, PrintWriter itemTable){
+    public static void ScanItem(Node n, PrintWriter itemTable, PrintWriter itemCategory,PrintWriter itemBuyPrice,PrintWriter itemBids,PrintWriter itemPosition, PrintWriter sellerRating,PrintWriter bidderRating,PrintWriter userLocation){
         org.w3c.dom.NamedNodeMap nattrib = n.getAttributes();
         String itemID = nattrib.item(0).getNodeValue();
         itemTable.print(itemID+"\t");
-        System.out.println(itemID);
         
         org.w3c.dom.NodeList itemChild = n.getChildNodes();
         for(int i=0; i<itemChild.getLength(); i++){
@@ -225,10 +231,13 @@ class MyParser {
                 itemTable.print(itemName+"\t");
             }else if(name == "Category"){ //Category in ItemCategory Table
                 String category = itemChild.item(i).getChildNodes().item(0).getNodeValue();
-                
+                itemCategory.print(itemID+"\t"+category+"\n");
             }else if(name == "Currently"){
                 String currently = strip(itemChild.item(i).getChildNodes().item(0).getNodeValue());
                 itemTable.print(currently+"\t");
+            }else if(name == "Buy_Price"){
+                String buyPrice = strip(itemChild.item(i).getChildNodes().item(0).getNodeValue());
+                itemBuyPrice.print(itemID+"\t"+buyPrice+"\n");
             }else if(name == "First_Bid"){
                 String firstBid = strip(itemChild.item(i).getChildNodes().item(0).getNodeValue());
                 itemTable.print(firstBid+"\t");
@@ -236,24 +245,28 @@ class MyParser {
                 String numOfBids = itemChild.item(i).getChildNodes().item(0).getNodeValue();
                 itemTable.print(numOfBids+"\t");
             }else if(name == "Bids"){
-            
+                ScanBid(itemChild.item(i), itemID, itemBids, bidderRating, userLocation);
             }else if(name == "Location"){ //latitude and longitude int ItemPosition table
                 String Location = itemChild.item(i).getChildNodes().item(0).getNodeValue();
                 itemTable.print(Location+"\t");
+                org.w3c.dom.NamedNodeMap attList = itemChild.item(i).getAttributes();
+                if(attList.getLength()>0){
+                	String latitude = attList.item(0).getNodeValue();
+                	String longitude = attList.item(1).getNodeValue();
+                    itemPosition.print(itemID+"\t"+latitude+"\t"+longitude+"\n");
+                }
             }else if(name == "Country"){
                 String Country = itemChild.item(i).getChildNodes().item(0).getNodeValue();
                 itemTable.print(Country+"\t");
-            }else if(name == "Started"){ //convert to date
-                String started = itemChild.item(i).getChildNodes().item(0).getNodeValue();
-                itemTable.print(started+"\t");
-            }else if(name == "Ends"){ //convert to date
-                String ends = itemChild.item(i).getChildNodes().item(0).getNodeValue();
-                itemTable.print(ends+"\t");
+            }else if(name == "Started" || name == "Ends"){ //convert to date
+                	String dateString = itemChild.item(i).getChildNodes().item(0).getNodeValue();
+                	itemTable.print(reformatDate(dateString)+"\t");
             }else if(name == "Seller"){ //id, rating
                 org.w3c.dom.NamedNodeMap sellerAtt = itemChild.item(i).getAttributes();
                 String rating = sellerAtt.item(0).getNodeValue();
                 String ID = sellerAtt.item(1).getNodeValue();
                 itemTable.print(ID+"\t");
+                sellerRating.print(ID+"\t"+rating+"\n");
             }else if(name == "Description"){
                 if(itemChild.item(i).getChildNodes().getLength()>0){
             		String description = itemChild.item(i).getChildNodes().item(0).getNodeValue();
@@ -265,33 +278,53 @@ class MyParser {
         }
     }
     
-    public static void ScanBid(Node n){
-    
+    public static void ScanBid(Node n, String itemID, PrintWriter itemBids, PrintWriter bidderRating, PrintWriter userLocation){
+    	org.w3c.dom.NodeList bids = n.getChildNodes();
+        for(int i=0; i<bids.getLength(); i++){
+            if(bids.item(i).getNodeName() == "Bid"){
+                Node bid = bids.item(i);
+        		//get bidder, time, amount
+        		Node bidder = lookFor(bid, "Bidder");
+        		String time = reformatDate( lookFor(bid, "Time").getFirstChild().getNodeValue() );
+        		String amount = strip(lookFor(bid, "Amount").getFirstChild().getNodeValue());
+        		//get bidder rating and id
+        		String rating = bidder.getAttributes().item(0).getNodeValue();
+        		String id = bidder.getAttributes().item(1).getNodeValue();
+        		//get bidder location and country
+                Node locationNode = lookFor(bidder, "Location");
+                Node countryNode = lookFor(bidder, "Country");
+                String location = locationNode == null ? "" : locationNode.getFirstChild().getNodeValue();
+        		String country = countryNode == null ? "" : countryNode.getFirstChild().getNodeValue();
+        
+        		itemBids.print(itemID+"\t"+id+"\t"+time+"\t"+amount+"\n");
+        		bidderRating.print(id+"\t"+rating+"\n");
+        		userLocation.print(id+"\t"+location+"\t"+country+"\n");
+            }
+        }
+
+
     }
     
-    public static void recursiveDescent(Node n, int level) {
-        // adjust indentation according to level
-        for(int i=0; i<4*level; i++)
-            System.out.print(" ");
-        
-        // dump out node name, type, and value
-        String ntype = typeName[n.getNodeType()];
-        String nname = n.getNodeName();
-        String nvalue = n.getNodeValue();
-        
-        System.out.println("Type = " + ntype + ", Name = " + nname + ", Value = " + nvalue);
-        
-        // dump out attributes if any
-        org.w3c.dom.NamedNodeMap nattrib = n.getAttributes();
-        if(nattrib != null && nattrib.getLength() > 0)
-            for(int i=0; i<nattrib.getLength(); i++)
-                recursiveDescent(nattrib.item(i),  level+1);
-        
-        // now walk through its children list
-        org.w3c.dom.NodeList nlist = n.getChildNodes();
-        
-        for(int i=0; i<nlist.getLength(); i++)
-            recursiveDescent(nlist.item(i), level+1);
+    public static Node lookFor(Node n, String tag){
+        org.w3c.dom.NodeList children = n.getChildNodes();
+        for(int i=0; i<children.getLength(); i++){
+        	if(children.item(i).getNodeName()==tag)
+                return children.item(i);
+        }
+        System.out.println(tag+" Not found");
+        return null;
+    }
+    
+    public static String reformatDate(String dateString){
+        try{
+        	SimpleDateFormat inputFormat = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+        	SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        	Date parsed = inputFormat.parse(dateString);
+        	return outputFormat.format(parsed);
+        }catch(ParseException e){
+            System.out.println("Date parse failed");
+            return "";
+        }
     }
     
     public static void main (String[] args) {
@@ -317,10 +350,36 @@ class MyParser {
             System.exit(2);
         }
         
-        /* Process all files listed on command line. */
-        for (int i = 0; i < args.length; i++) {
-            File currentFile = new File(args[i]);
-            processFile(currentFile);
+        try{
+        	itemTable = new PrintWriter("ItemTable", "UTF-8");
+        	itemCategory = new PrintWriter("ItemCategory", "UTF-8");
+        	itemBuyPrice = new PrintWriter("ItemBuyPrice", "UTF-8");
+        	itemBids = new PrintWriter("ItemBids", "UTF-8");
+        	itemPosition = new PrintWriter("ItemPosition", "UTF-8");
+        	sellerRating = new PrintWriter("SellerRating", "UTF-8");
+        	bidderRating = new PrintWriter("BidderRating", "UTF-8");
+        	userLocation = new PrintWriter("UserLocation", "UTF-8");
+        
+        	/* Process all files listed on command line. */
+        	for (int i = 0; i < args.length; i++) {
+            	File currentFile = new File(args[i]);
+            	processFile(currentFile);
+        	}
+            
+            itemTable.close();
+            itemCategory.close();
+            itemBuyPrice.close();
+            itemBids.close();
+            itemPosition.close();
+            sellerRating.close();
+            bidderRating.close();
+            userLocation.close();
+        
+        }catch(FileNotFoundException e){
+            
+        }
+        catch(UnsupportedEncodingException e){
+            
         }
     }
 }

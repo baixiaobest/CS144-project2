@@ -20,11 +20,9 @@ key:(UserID)
 BidderRating(UserID, Rating)
 key:(UserID)
 
-UserLocation(UserID, Location)
+UserLocation(UserID, Location, Country)
 key:(UserID)
 
-UserCountry(UserID, Country)
-key:(UserID)
 
 
 Functional Dependencies:
