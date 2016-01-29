@@ -8,7 +8,7 @@ create table ItemTable(
 	Country varchar(200),
 	Started TIMESTAMP,
 	Ends TIMESTAMP,
-	SellerID int,
+	SellerID varchar(200),
 	Description varchar(4000),
 	primary key(ItemID)
 )ENGINE=INNODB;
@@ -26,7 +26,7 @@ create table ItemBuyPrice(
 
 create table ItemBids(
 	ItemID int not null,
-	BidderID int,
+	BidderID varchar(200),
 	Time TIMESTAMP,
 	Amount DECIMAL(8,2),
 	primary key(ItemID,BidderID, Time)
@@ -40,19 +40,19 @@ create table ItemPosition(
 )ENGINE=INNODB;
 
 create table SellerRating(
-	UserID int not null,
+	UserID varchar(200) not null,
 	Rating int,
 	primary key(UserID)
 )ENGINE=INNODB;
 
 create table BidderRating(
-	UserID int not null,
+	UserID varchar(200) not null,
 	Rating int,
 	primary key(UserID)
 )ENGINE=INNODB;
 
 create table UserLocation(
-	UserID int not null,
+	UserID varchar(200) not null,
 	Location varchar(200),
 	Country varchar(200),
 	primary key(UserID)
