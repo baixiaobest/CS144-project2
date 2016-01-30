@@ -1,6 +1,6 @@
 ant run-all;
 
-cat Itemtable | sort | uniq > ItemTable-unique;
+cat ItemTable | sort | uniq > ItemTable-unique;
 cat ItemCategory | sort | uniq > ItemCategory-unique; #duplicates found
 cat ItemBuyPrice | sort | uniq > ItemBuyPrice-unique;
 cat ItemBids | sort | uniq > ItemBids-unique;
@@ -15,3 +15,4 @@ mysql CS144 < load.sql;
 
 rm *-unique;
 rm Item* SellerRating BidderRating UserLocation;
+ant clean;

@@ -27,8 +27,4 @@ key:(UserID)
 
 Excluding those that effectively specify keys, there is no completely nontrivial functional dependencies that hold on each relation.
 
-********
-Shall we count
-Something like ItemID, Name -> rest ? It is compeletely nontrivial but redundant.
-
 All relations are in BCNF and 4NF.
