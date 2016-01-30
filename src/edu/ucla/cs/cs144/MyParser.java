@@ -311,7 +311,7 @@ class MyParser {
         	if(children.item(i).getNodeName()==tag)
                 return children.item(i);
         }
-        System.out.println(tag+" Not found");
+        //System.out.println(tag+" Not found");
         return null;
     }
     
