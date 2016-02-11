@@ -1,3 +1,4 @@
+#!/bin/bash  
 ant run-all;
 
 cat ItemTable | sort | uniq > ItemTable-unique;
