@@ -15,7 +15,8 @@ create table ItemTable(
 
 create table ItemCategory(
 	ItemID int not null,
-	Category varchar(200)
+	Category varchar(200),
+	primary key(ItemID, Category)
 )ENGINE=INNODB;
 
 create table ItemBuyPrice(
